@@ -47,9 +47,20 @@ export const useGameStore = create<GameState>((set, get) => ({
       return;
     }
 
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const host = window.location.host;
-    const ws = new WebSocket(`${protocol}//${host}`);
+    const appUrl = process.env.APP_URL;
+    let wsUrl: string;
+
+    if (appUrl) {
+      const protocol = appUrl.startsWith('https:') ? 'wss:' : 'ws:';
+      const host = appUrl.replace(/^https?:\/\//, '');
+      wsUrl = `${protocol}//${host}`;
+    } else {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const host = window.location.host;
+      wsUrl = `${protocol}//${host}`;
+    }
+
+    const ws = new WebSocket(wsUrl);
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
